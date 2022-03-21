@@ -10,8 +10,8 @@ public class WebSocketTalker : MonoBehaviour
     private readonly ConcurrentQueue<Action> _queue = new ConcurrentQueue<Action>(); // Concurrent 는 Thread Safe 함
     // 동시에 접근할때 dequeue 보다 enqueue 가 먼저 일어남 (보장됨)
 
-    // const string URL = "ws://ggmhan.herokuapp.com/";
-    const string URL = "ws://127.0.0.1:48000";
+    const string URL = "ws://ggmhan.herokuapp.com/";
+    // const string URL = "ws://127.0.0.1:48000";
     private WebSocket ws;
 
     public GameObject cubeObj;
