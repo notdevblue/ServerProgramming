@@ -11,6 +11,8 @@
   "license": "GPL-3.0",
   "dependencies": {
     "express": "^4.17.3",
+    "moment": "^2.29.1",
+    "util": "^0.12.4",
     "ws": "^8.5.0"
   }
 }

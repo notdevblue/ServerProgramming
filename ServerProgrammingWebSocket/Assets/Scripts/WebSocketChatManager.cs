@@ -15,10 +15,20 @@ public enum ChatType
    END_OF_ENUM
 }
 
+struct Message
+{
+   public int chat;           // 채팅타입
+   public string text;        // 내용
+   public string id;          // 보낸 사람의 id
+   public string target;      // 귓말 보낼 타겟 유저
+   public string date;        // 쳇 보낸 시간
+
+}
+
 public class WebSocketChatManager : MonoBehaviour
 {
-   private const string ADDR   = "ggm-ws-han.herokuapp.com";
-   private const ushort PORT  = 41216;
+   private const string ADDR   = "localhost";
+   private const ushort PORT  = 48000;
 
    [SerializeField]  private TMP_InputField   _messageInput;  // 사용자가 입력한 메세지
    [SerializeField]  private GameObject       _chatLogPrefab;
@@ -33,13 +43,12 @@ public class WebSocketChatManager : MonoBehaviour
 
    private string id = "test";
 
-
    private void Awake()
    {
       _currentInputType = ChatType.NORMAL;
       _chatList = new List<ChatCell>();
 
-      _connection = new WebSocket($"ws://{ADDR}");
+      _connection = new WebSocket($"ws://{ADDR}:{PORT}");
       _connection.OnMessage += (sender, e) =>
       {
          ChatType type = ChatType.NORMAL; // 서버에서 받아온 데이터로 변경 예졍
@@ -55,11 +64,7 @@ public class WebSocketChatManager : MonoBehaviour
          Debug.Log("Connection Closed");
       };
 
-   }
-
-   private void Start()
-   {
-      _connection.Connect();   
+      _connection.Connect();
    }
 
    private void Update()
@@ -91,16 +96,53 @@ public class WebSocketChatManager : MonoBehaviour
       _messageInput.text = "";
       Debug.Log($"Sending \"{text}\" to server");
 
-      _connection.Send(text);
-      Show(_currentInputType, ChatTypeToColor(_currentInputType), text);
+      Message message = new Message();
+      if (text.Substring(0,2).Equals("/r")) // 귓속말인 경우     /r id 내용
+      {
+         string[] split = text.Split(' ');
+         message.chat = 3;
+         message.text = split[2];
+         _connection.Send(JsonUtility.ToJson(message));
+      }
+      else // 일반체팅?
+      {
+         message.chat = 0;
+         message.text = text;
+         _connection.Send(JsonUtility.ToJson(message));
+      }
+      Show(_currentInputType, ChatTypeToColor(_currentInputType), text, false);
    }
 
    // 서버로부터 받은 메세지를 보여줌
-   private void Show(ChatType type, Color color, string text)
+   private void Show(ChatType type, Color color, string text, bool isJson = true)
    {
       GameObject messageObject = Instantiate(_chatLogPrefab, _parentContent);
       ChatCell cell = messageObject.GetComponent<ChatCell>();
-      cell.SetChatCell(type, color, $"{id}: {text}");
+
+      if(!isJson)
+      {
+         cell.SetChatCell(type, color, $"me: {text}");
+         return;
+      }
+
+      Message jsonMsg = JsonUtility.FromJson<Message>(text);
+
+      switch(jsonMsg.chat)
+      {
+         case (int)ChatType.NORMAL:
+            text = jsonMsg.date = " [" + jsonMsg.id + "] " + jsonMsg.text;
+            break;
+         case (int)ChatType.WISPER:
+            text = jsonMsg.date = " [" + jsonMsg.id + "] " + jsonMsg.text;
+            color = Color.yellow;
+            break;
+         case (int)ChatType.SYSTEM:
+            text = jsonMsg.date = "[SYSTEM] " + jsonMsg.text;
+            color = Color.blue;
+            break;
+      }
+
+      cell.SetChatCell(type, color, text);
 
       _chatList.Add(cell);
    }
