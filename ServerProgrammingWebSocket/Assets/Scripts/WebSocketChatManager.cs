@@ -48,7 +48,9 @@ public class WebSocketChatManager : MonoBehaviour
       _currentInputType = ChatType.NORMAL;
       _chatList = new List<ChatCell>();
 
-      _connection = new WebSocket($"ws://{ADDR}:{PORT}");
+      // _connection = new WebSocket($"ws://{ADDR}:{PORT}"); // https://ggm-ws-han.herokuapp.com/
+      // _connection = new WebSocket($"ws://websocketchatserver.herokuapp.com");
+      _connection = new WebSocket($"ws://ggm-ws-han.herokuapp.com/");
       _connection.OnMessage += (sender, e) =>
       {
          ChatType type = ChatType.NORMAL; // 서버에서 받아온 데이터로 변경 예졍
@@ -97,10 +99,12 @@ public class WebSocketChatManager : MonoBehaviour
       Debug.Log($"Sending \"{text}\" to server");
 
       Message message = new Message();
-      if (text.Substring(0,2).Equals("/r")) // 귓속말인 경우     /r id 내용
+      if (text.StartsWith("/r")) // 귓속말인 경우     /r id 내용
       {
-         string[] split = text.Split(' ');
+         char[] charSeperators = new char[] {' '};
+         string[] split = text.Split(charSeperators, 3); // 공백 기준으로 세 파트만 나눌 것
          message.chat = 3;
+         message.target = split[1];
          message.text = split[2];
          _connection.Send(JsonUtility.ToJson(message));
       }
@@ -159,5 +163,10 @@ public class WebSocketChatManager : MonoBehaviour
       };
 
       return colors[(int)type];
+   }
+
+   private void OnApplicationQuit() {
+      _connection.Close();
+      Debug.Log("ending after: " + Time.time);
    }
 }
