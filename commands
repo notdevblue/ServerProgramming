@@ -1,0 +1,6 @@
+use admin
+db.crateUser({user: "name", pwd: "password", roles:['root']}
+
+momgod --auth
+mongo admin -u name -p password
+
