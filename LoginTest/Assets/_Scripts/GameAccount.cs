@@ -1,7 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+using System;
 
+[Serializable]
 public class GameAccount
 {
    public string _id; // db 통해 자동 부여되는 아이디.

@@ -12,3 +12,6 @@ MVC/node_modules
 LoginTest/Library
 LoginTest/Logs
 LoginTest/Temp
+
+Passport/.env
+Passport/node_modules

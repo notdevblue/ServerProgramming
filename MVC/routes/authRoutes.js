@@ -4,6 +4,8 @@ const Account = mongoose.model("accounts");
 const argon2i = require("argon2-ffi").argon2i;
 const crypto = require("crypto");
 
+const passwordRegex = new RegExp("(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.{8,})");
+
 
 // 라우팅
 module.exports = (app) => {
@@ -12,7 +14,7 @@ module.exports = (app) => {
       var response = { code: 0, msg: "success" };
 
       const { rUsername, rPassword } = req.body;
-      if (rUsername == null || rPassword == null) {
+      if (rUsername == null || !passwordRegex.test(rPassword)) {
          response.code = 1;
          response.code = "Invalid credentials";
          console.log("Invalid Cred null");
@@ -20,7 +22,9 @@ module.exports = (app) => {
          return;
       }
 
-      var userAccount = await Account.findOne({ username: rUsername }); // IO => await
+      // username 이 rUsername 인 계정을 찾고, username 만 가져옴
+      // 여러개 가져올때는 "username password" 처럼 띄어쓰기로 구분함
+      var userAccount = await Account.findOne({ username: rUsername }, "username password"); // IO => await
 
       if (userAccount != null) {
 
@@ -55,23 +59,35 @@ module.exports = (app) => {
          //    return;
          // }
       }
-      response.code = 1;
-      console.log("Cannot find account");
-      response.msg = "Invalid credentials";
-      res.send(response);
-      return;
+      else {
+         response.code = 1;
+         console.log("Cannot find account");
+         response.msg = "Invalid credentials";
+         res.send(response);
+         return;
+      }
    });
 
    app.post("/account/create", async (req, res) => {
       console.log(req.body);
+      var response = {};
 
       const { rUsername, rPassword } = req.body;
-      if (rUsername == null || rPassword == null) {
-         res.send("Invalid credentials");
+      if (rUsername == null || rUsername.length < 3 || rUsername.length > 24) {
+         response.code = 1;
+         response.msg = "Invalid Credentials";
+         res.send(response);
          return;
       }
 
-      var userAccount = await Account.findOne({ username: rUsername }); // IO => await
+      if (!passwordRegex.test(rPassword)) {
+         response.code = 3;
+         response.msg = "Unsafe password";
+         res.send(response);
+         return;
+      }
+
+      var userAccount = await Account.findOne({ username: rUsername }, "username"); // IO => await
 
       if (userAccount == null) {
          console.log("Created new account");

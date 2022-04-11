@@ -3,9 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using TMPro;
+using System.Text.RegularExpressions;
 
 public class Login : MonoBehaviour
 {
+   private string PASSWORD_REGEX = "(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.{8,})";
+
+
+
    [SerializeField] private string _loginEndPoint = "http://127.0.0.1:3003/login";
    [SerializeField] private string _createEndPoint = "http://127.0.0.1:3003/create";
 
@@ -26,6 +31,20 @@ public class Login : MonoBehaviour
    {
       string username = _usernameInput.text;
       string password = _passwordInput.text;
+
+      if (username.Length < 3 || username.Length > 24)
+      {
+         Debug.Log("Invalid username");
+         yield break;
+      }
+
+      if (!Regex.IsMatch(password, PASSWORD_REGEX))
+      {
+         Debug.Log("Invalid password");
+         yield break;
+      }
+
+
       WWWForm form = new WWWForm();
 
       form.AddField("rUsername", username);
@@ -48,17 +67,25 @@ public class Login : MonoBehaviour
 
       if (req.result == UnityWebRequest.Result.Success)
       {
-         string result = req.downloadHandler.text;
-         Debug.Log(result);
+         LoginResponse response = JsonUtility.FromJson<LoginResponse>(req.downloadHandler.text);
 
-         if (result != "Invalid credentials") // login success
+         if (response.code == 0) // login success
          {
-            GameAccount reAccount = JsonUtility.FromJson<GameAccount>(result);
+            Debug.Log("Login Success");
             // text rendering
          }
          else
          {
             // Invalid Credentials.
+            switch (response.code)
+            {
+               case 1:
+                  Debug.Log("Invalid Credentials");
+                  break;
+               default:
+
+                  break;
+            }
          }
       }
       else
@@ -67,7 +94,7 @@ public class Login : MonoBehaviour
          Debug.LogError(req.error);
       }
 
-      Debug.Log($"{username}:{password}");
+      // Debug.Log($"{username}:{password}");
 
    }
 
@@ -77,6 +104,18 @@ public class Login : MonoBehaviour
       string password = _passwordInput.text;
       // string url =
       //          $"{_createEndPoint}?rUsername={username}&rPassword={password}";
+
+      if (username.Length < 3 || username.Length > 24)
+      {
+         Debug.Log("Invalid username");
+         yield break;
+      }
+
+      if (!Regex.IsMatch(password, PASSWORD_REGEX))
+      {
+         Debug.Log("Invalid password");
+         yield break;
+      }
 
       WWWForm form = new WWWForm();
       form.AddField("rUsername", username);
@@ -100,17 +139,27 @@ public class Login : MonoBehaviour
 
       if (req.result == UnityWebRequest.Result.Success)
       {
-         string result = req.downloadHandler.text;
-         Debug.Log(result);
+         CreateResponse response = JsonUtility.FromJson<CreateResponse>(req.downloadHandler.text);
 
-         if (result != "Invalid credentials") // login success
+         if (response.code == 0) // Create success
          {
-            GameAccount reAccount = JsonUtility.FromJson<GameAccount>(result);
+            Debug.Log("Create Success");
             // text rendering
          }
-         else
+         else // Create fail
          {
             // Invalid Credentials.
+            switch (response.code)
+            {
+               case 1:
+                  Debug.Log("Invalid Credentials");
+                  break;
+               case 2:
+                  Debug.Log("Username is already taken");
+                  break;
+               default:
+                  break;
+            }
          }
       }
       else
