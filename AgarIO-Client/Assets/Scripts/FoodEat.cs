@@ -6,7 +6,19 @@ using UnityEngine.UI;
 public class FoodEat : MonoBehaviour
 {
    [SerializeField] private float _sizeIncrease = 0.1f;
-   [SerializeField] private Text _scoreBoard;
+   private Text _scoreBoard = null;
+   private Text ScoreBoard
+   {
+      get
+      {
+         if (_scoreBoard == null)
+         {
+            _scoreBoard = GameObject.Find("ScoreBoard").GetComponent<Text>();
+         }
+         return _scoreBoard;
+      }
+   }
+
    private int _score = 0;
 
    private void OnTriggerEnter(Collider other)
@@ -15,7 +27,7 @@ public class FoodEat : MonoBehaviour
       {
          transform.localScale += new Vector3(_sizeIncrease, _sizeIncrease, _sizeIncrease);
          _score += 10;
-         _scoreBoard.text = $"Score: {_score}";
+         ScoreBoard.text = $"Score: {_score}";
          Destroy(other.gameObject);
       }
    }

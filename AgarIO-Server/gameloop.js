@@ -37,6 +37,8 @@ module.exports.setGameLoop = function (update, tickLength = 1000 / 30) {
       }
 
       const remainingTick = target - process.hrtime();
+
+      // TODO: 나중에 한번 해보면 좋을거같은데
       if (remainingTick > longWaitMs) {
          setTimeout(gameLoop, Math.max(longWaitMs, 16));
       } else {

@@ -10,10 +10,23 @@ struct Message
    public int opCode; // 이름이 기계어 상에서 명령어 의미한다고 함
 }
 
+struct Player
+{
+   public int owner; // 소유권 정보
+   public int posX;
+   public int posY;
+   public byte r;
+   public byte g;
+   public byte b;
+   public int cellType;
+}
+
 public class WebSocketClient : MonoBehaviour
 {
    private WebSocket ws;
    private readonly ConcurrentQueue<Action> _actions = new ConcurrentQueue<Action>();
+
+   public GameObject playerObj;
 
    // Server op code (서버 이벤트 처리)
    const int START_COUNTDOWN_OP_CODE = 101;
@@ -30,10 +43,11 @@ public class WebSocketClient : MonoBehaviour
       ws.OnMessage += (sender, e) => {
          if (!string.IsNullOrEmpty(e.Data))
          {
-            _actions.Enqueue(GeneratePlayer);
+            _actions.Enqueue(() => GeneratePlayer(e.Data));
             Debug.Log($"Message received from: {((WebSocket)sender).Url}, Data: {e.Data}");
          }
       };
+      
    }
 
    private void Update()
@@ -66,8 +80,11 @@ public class WebSocketClient : MonoBehaviour
 
    }
 
-   private void GeneratePlayer()
+   private void GeneratePlayer(string data)
    {
-
+      Player p = JsonUtility.FromJson<Player>(data);
+      Instantiate(playerObj, new Vector3(p.posX, p.posY, 0), Quaternion.identity);
+      playerObj.GetComponentInChildren<MeshRenderer>().sharedMaterial.color = new Color32(p.r, p.g, p.b, 255);
+      Debug.Log("Player Generated");
    }
 }
