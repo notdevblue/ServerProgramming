@@ -15,3 +15,7 @@ LoginTest/Temp
 
 Passport/.env
 Passport/node_modules
+
+AgarIO-Client/Library
+AgarIO-Client/Logs
+AgarIO-Client/Temp
