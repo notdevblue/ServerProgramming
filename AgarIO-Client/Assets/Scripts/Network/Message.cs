@@ -9,4 +9,5 @@ public class Message
     public int opCode;
     public Player player;
     public List<Food> foods;
+    public List<Player> visibleCells;
 }

@@ -9,6 +9,7 @@ var sockets = {};
 let gameLoopId = null;
 const serverFrameRate = 1.0; //10.0;
 let lastPlayerId = 0;
+let lastFoodId = 0;
 
 //server op code
 const START_COUNTDOWN_OP_CODE = 101;
@@ -24,11 +25,7 @@ const PING_CHECK_OP_CODE = 205;
 function StartGame() {
     //loop create
     gameLoopId = gameloop.setGameLoop(function () {
-        for (let player = 0; player < players.length; ++player) {
-            movePlayer(players[player]);
-            addFood();
-            // console.log("gameloop! " + player);
-        }
+        addFood();
     }, 2000.0 / serverFrameRate);
 
     gameloop.setGameLoop(function () {
@@ -118,15 +115,15 @@ function addFood() {
     while (foodToAdd--) {
         var pos = getRandomPosition();
         var c = getRandomColor();
-        var food = new Food(1, pos, c.r, c.g, c.b);
+        var food = new Food(lastFoodId++, pos, c.r, c.g, c.b);
         foods.push(food);
     }
 
-    for (var key in players) {
-        msg.opCode == ADD_FOOD_OP_CODE;
-        msg.foods = foods;
-        sockets[key].send(JSON.stringify(msg));
-    }
+    // for (var key in players) {
+    //     msg.opCode == ADD_FOOD_OP_CODE;
+    //     msg.foods = foods;
+    //     sockets[key].send(JSON.stringify(msg));
+    // }
 }
 
 function removeFood() {
@@ -140,10 +137,12 @@ function pingCheck(ws) {
 }
 
 function sendUpdates() {
-    players.forEach(function(p) {
+    players.forEach(function (p) {
+        msg.socketId = p.ownerId;
         msg.opCode = MOVE_PLAYER_OP_CODE;
         msg.player = p;
-        msg.foods = foods;
+        msg.foods = foods; // 서버에서 살아남은 foods
+        msg.visibleCells = players;
         console.log("sendUpdates: " + p.targetX);
         sockets[p.ownerId].send(JSON.stringify(msg));
     });
@@ -152,8 +151,9 @@ function sendUpdates() {
 var msg = {
     socketId: -1,
     opCode: 0,
-    foods: [],
-    player: null
+    foods: [], // 살아 있는 푸드 데이터
+    player: null,
+    visibleCells: [] // 사아 범위 내 모든 종류의 플레이어
 };
 
 const wsserver = new WebSocket.Server({ port: process.env.PORT || 3003 }, () => {

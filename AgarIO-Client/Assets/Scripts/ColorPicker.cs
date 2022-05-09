@@ -9,6 +9,6 @@ public class ColorPicker : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        GetComponent<Renderer>().material = mats[Random.Range(0, 4)];
+        // GetComponent<Renderer>().material = mats[Random.Range(0, 4)];
     }
 }

@@ -11,7 +11,7 @@ public class Movement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (WebsocketClient.GetInstance().clientId == ownerId) 
+        if (WebsocketClient.GetInstance().clientId == ownerId)
             _camera.SetActive(true);
 
         InvokeRepeating(nameof(SendTargetToServer), 0, 0.5f);
@@ -20,7 +20,7 @@ public class Movement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (WebsocketClient.GetInstance().clientId != ownerId) return;
+        // if (WebsocketClient.GetInstance().clientId != ownerId) return;
         //Vector3 target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector3 target = CheckTarget();
         target.z = transform.position.z;
