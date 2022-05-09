@@ -1,45 +1,47 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Movement : MonoBehaviour
 {
-    public GameObject _camera;
-    public float moveSpeed;
-    public int ownerId;
+   // public GameObject _camera;
+   public float moveSpeed;
+   public int ownerId;
+   public Text nickname;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        if (WebsocketClient.GetInstance().clientId == ownerId)
-            _camera.SetActive(true);
+   // Start is called before the first frame update
+   void Start()
+   {
+      GetComponentInChildren<Canvas>().worldCamera = Camera.main;
+      if (WebsocketClient.GetInstance().clientId == ownerId)
+         Camera.main.GetComponent<CameraScripts>().player = this.transform;
+      InvokeRepeating(nameof(SendTargetToServer), 0, 0.5f);
+   }
 
-        InvokeRepeating(nameof(SendTargetToServer), 0, 0.5f);
-    }
+   // Update is called once per frame
+   void Update()
+   {
+      // if (WebsocketClient.GetInstance().clientId != ownerId) return;
+      //Vector3 target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+      Vector3 target = CheckTarget();
+      target.z = transform.position.z;
 
-    // Update is called once per frame
-    void Update()
-    {
-        // if (WebsocketClient.GetInstance().clientId != ownerId) return;
-        //Vector3 target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector3 target = CheckTarget();
-        target.z = transform.position.z;
+      transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
+   }
 
-        transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
-    }
+   void SendTargetToServer()
+   {
+      if (WebsocketClient.GetInstance().clientId != ownerId) return;
+      WebsocketClient.GetInstance().SendUpdate(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+      Debug.Log("SendTargetToServer");
+   }
 
-    void SendTargetToServer()
-    {
-        if (WebsocketClient.GetInstance().clientId != ownerId) return;
-        WebsocketClient.GetInstance().SendUpdate(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-        Debug.Log("SendTargetToServer");
-    }
+   Vector3 CheckTarget()
+   {
+      float x = WebsocketClient.GetInstance().playerPool[ownerId].targetX;
+      float y = WebsocketClient.GetInstance().playerPool[ownerId].targetY;
 
-    Vector3 CheckTarget()
-    {
-        float x = WebsocketClient.GetInstance().playerPool[ownerId].targetX;
-        float y = WebsocketClient.GetInstance().playerPool[ownerId].targetY;
-
-        return new Vector3(x, y, 0);
-    }
+      return new Vector3(x, y, 0);
+   }
 }

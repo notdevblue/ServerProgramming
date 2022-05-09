@@ -36,7 +36,7 @@
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
   </PropertyGroup>
   <ItemGroup>
-     <Compile Include="Assets/Scripts/Network/WebSocketClient.cs" />
+     <Compile Include="Assets/Scripts/Network/WebsocketClient.cs" />
      <Compile Include="Assets/Scripts/Enity/Food.cs" />
      <Compile Include="Assets/Scripts/Network/Message.cs" />
      <Compile Include="Assets/Scripts/FoodSpawner.cs" />
@@ -45,6 +45,7 @@
      <Compile Include="Assets/Scripts/Enity/Virus.cs" />
      <Compile Include="Assets/Scripts/ColorPicker.cs" />
      <Compile Include="Assets/Scripts/Enity/Player.cs" />
+     <Compile Include="Assets/Scripts/CameraScripts.cs" />
      <None Include="Assets/Packages/WebSocketSharp-netstandard.1.0.1/lib/netstandard2.0/websocket-sharp.xml" />
     <Reference Include="UnityEngine">
         <HintPath>/home/han/Unity/Hub/Editor/2021.3.2f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>

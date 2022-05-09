@@ -13,8 +13,9 @@ public class Player
     public int b;
     public int cellType;
     public string nickname;
-    public int mass;
+    public float mass;
     public float targetX;
     public float targetY;
+   public int score;
 
 }

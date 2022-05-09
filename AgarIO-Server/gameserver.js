@@ -88,7 +88,7 @@ function spawnPlayer(ws) {
     var pos = getRandomPosition();
     var c = getRandomColor();
     var mass = 1;
-    var cell = new Player(ownerId, pos, c.r, c.g, c.b, ownerId, mass); //nickname
+    var cell = new Player(ownerId, pos, c.r, c.g, c.b, ws.nickname, mass); //nickname
     console.log('spawning player : ' + ownerId);
 
     msg.opCode = JOIN_PLAYER_OP_CODE;
@@ -127,7 +127,12 @@ function addFood() {
 }
 
 function removeFood() {
+}
 
+function deleteFood(fid) {
+    foods[fid] = {};
+    console.log("delete food: " + fid);
+    foods.splice(fid, 1); // 사직되는 요소부터 한칸 제거함
 }
 
 function pingCheck(ws) {
@@ -138,13 +143,13 @@ function pingCheck(ws) {
 
 function sendUpdates() {
     players.forEach(function (p) {
-        msg.socketId = p.ownerId;
+        msg.socketId = p.owner;
         msg.opCode = MOVE_PLAYER_OP_CODE;
         msg.player = p;
         msg.foods = foods; // 서버에서 살아남은 foods
         msg.visibleCells = players;
-        console.log("sendUpdates: " + p.targetX);
-        sockets[p.ownerId].send(JSON.stringify(msg));
+        // console.log("sendUpdates: " + p.targetX);
+        sockets[p.owner].send(JSON.stringify(msg));
     });
 }
 
@@ -153,7 +158,8 @@ var msg = {
     opCode: 0,
     foods: [], // 살아 있는 푸드 데이터
     player: null,
-    visibleCells: [] // 사아 범위 내 모든 종류의 플레이어
+    visibleCells: [], // 사아 범위 내 모든 종류의 플레이어
+    eatenFoodId: -1,
 };
 
 const wsserver = new WebSocket.Server({ port: process.env.PORT || 3003 }, () => {
@@ -174,13 +180,21 @@ wsserver.on('connection', function connection(ws) {
             msg = JSON.parse(data.toString());
             switch (msg.opCode) {
                 case SCENE_READY_OP_CODE:
+                    ws.nickname = msg.nickname;
                     spawnPlayer(ws);
+                    ws.score = 0;
                     break;
                 case PING_CHECK_OP_CODE:
                     pingCheck(ws);
                     break;
                 case MOVE_PLAYER_OP_CODE:
                     players[msg.socketId] = msg.player;
+                    break;
+                case EAT_FOOD_OP_CODE:
+                    ws.score += 10;
+                    players[ws.clientId].score = ws.score;
+                    console.log("eating food.");
+                    deleteFood(msg.eatenFoodId);
                     break;
                 default:
                     console.log("[Warning] Unrecognized opCode in msg");
