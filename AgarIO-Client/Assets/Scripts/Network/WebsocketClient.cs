@@ -33,6 +33,8 @@ public class WebsocketClient : MonoBehaviour
    const int EAT_FOOD_OP_CODE = 202;
    const int PING_CHECK_OP_CODE = 205;
 
+   public Action playerUpdateAction;
+
    public InputField inputNickname;
    public Text scoreText;
 
@@ -163,6 +165,7 @@ public class WebsocketClient : MonoBehaviour
       {
          playerPool[cell.owner].targetX = cell.targetX;
          playerPool[cell.owner].targetY = cell.targetY;
+         playerPool[cell.owner] = cell;
       });
 
       List<Food> removeFoodList = foodList.Where(i => !msg.foods.Any(e => i.id == e.id)).ToList(); // 사라진 푸드
@@ -178,7 +181,7 @@ public class WebsocketClient : MonoBehaviour
          r.sharedMaterial.SetColor("_Color", new Color(f.r / 255f, f.g / 255f, f.b / 255f));
          foodList.Add(f);
          Debug.Log("Generate Food");
-      });
+      }); // 유니티 2018 부터 포이치 가비지 발생 안 되게 업뎃됨 for 와 foreach 성능상 큰 차이 없다고 커뮤에서 그럼
 
       GameObject.FindGameObjectsWithTag("Food")
          .ToList<GameObject>()
@@ -189,6 +192,8 @@ public class WebsocketClient : MonoBehaviour
          });
 
       scoreText.text = "Score: " + msg.player.score;
+
+      playerUpdateAction?.Invoke();
       Debug.Log("getFromServer: " + msg.player.targetX);
    }
 

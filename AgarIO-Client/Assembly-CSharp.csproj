@@ -46,6 +46,7 @@
      <Compile Include="Assets/Scripts/ColorPicker.cs" />
      <Compile Include="Assets/Scripts/Enity/Player.cs" />
      <Compile Include="Assets/Scripts/CameraScripts.cs" />
+     <Compile Include="Assets/Scripts/LeaderBoard.cs" />
      <None Include="Assets/Packages/WebSocketSharp-netstandard.1.0.1/lib/netstandard2.0/websocket-sharp.xml" />
     <Reference Include="UnityEngine">
         <HintPath>/home/han/Unity/Hub/Editor/2021.3.2f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
@@ -677,6 +678,10 @@
       <Project>{eac63e2e-f37d-130f-67b9-a3b0df9e9cab}</Project>
       <Name>Unity.Services.Core.Environments</Name>
     </ProjectReference>
+    <ProjectReference Include="Unity.Sysroot.Linux_x86_64.csproj">
+      <Project>{2bd06824-867b-dfe9-23a5-7f6f91331185}</Project>
+      <Name>Unity.Sysroot.Linux_x86_64</Name>
+    </ProjectReference>
     <ProjectReference Include="Unity.VisualStudio.Editor.csproj">
       <Project>{944c395e-0696-7c20-7fea-18e92ba17dce}</Project>
       <Name>Unity.VisualStudio.Editor</Name>
@@ -692,6 +697,10 @@
     <ProjectReference Include="Unity.TextMeshPro.csproj">
       <Project>{612ff99c-a8b4-8164-db87-6243bc224d5f}</Project>
       <Name>Unity.TextMeshPro</Name>
+    </ProjectReference>
+    <ProjectReference Include="Unity.Toolchain.Linux-x86_64.csproj">
+      <Project>{5eb13aa3-dd3a-92c9-62cf-ccf91988d770}</Project>
+      <Name>Unity.Toolchain.Linux-x86_64</Name>
     </ProjectReference>
     <ProjectReference Include="UnityEditor.UI.csproj">
       <Project>{a2055cb7-b18d-037a-cd41-2b0bae39ac7c}</Project>
@@ -709,21 +718,13 @@
       <Project>{8307f49c-c4d6-f6a1-4d26-2aa31d790df0}</Project>
       <Name>UnityEngine.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="Unity.Services.Core.csproj">
-      <Project>{9d478631-c060-a42c-8c1f-a6ada80cbce9}</Project>
-      <Name>Unity.Services.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="Unity.Sysroot.Linux_x86_64.csproj">
-      <Project>{2bd06824-867b-dfe9-23a5-7f6f91331185}</Project>
-      <Name>Unity.Sysroot.Linux_x86_64</Name>
-    </ProjectReference>
-    <ProjectReference Include="Unity.Toolchain.Linux-x86_64.csproj">
-      <Project>{5eb13aa3-dd3a-92c9-62cf-ccf91988d770}</Project>
-      <Name>Unity.Toolchain.Linux-x86_64</Name>
-    </ProjectReference>
     <ProjectReference Include="Unity.SysrootPackage.Editor.csproj">
       <Project>{6e5984a8-684b-5669-79d9-2686f022ed05}</Project>
       <Name>Unity.SysrootPackage.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="Unity.Services.Core.csproj">
+      <Project>{9d478631-c060-a42c-8c1f-a6ada80cbce9}</Project>
+      <Name>Unity.Services.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
