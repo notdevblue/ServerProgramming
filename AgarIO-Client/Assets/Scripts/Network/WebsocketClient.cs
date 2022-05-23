@@ -181,7 +181,7 @@ public class WebsocketClient : MonoBehaviour
          r.sharedMaterial.SetColor("_Color", new Color(f.r / 255f, f.g / 255f, f.b / 255f));
          foodList.Add(f);
          Debug.Log("Generate Food");
-      }); // 유니티 2018 부터 포이치 가비지 발생 안 되게 업뎃됨 for 와 foreach 성능상 큰 차이 없다고 커뮤에서 그럼
+      }); // 유니티 2018 부터 포이치 가비지 발생 안 되게 업뎃됨 for 와 foreaetch 성능상 큰 차이 없다고 커뮤에서 그럼
 
       GameObject.FindGameObjectsWithTag("Food")
          .ToList<GameObject>()
@@ -195,6 +195,8 @@ public class WebsocketClient : MonoBehaviour
 
       playerUpdateAction?.Invoke();
       Debug.Log("getFromServer: " + msg.player.targetX);
+
+      playerUpdateAction();
    }
 
    public void SendEatFood(int eatenFoodId, float mass)

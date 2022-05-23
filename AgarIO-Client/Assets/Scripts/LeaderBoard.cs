@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,5 +20,16 @@ public class LeaderBoard : MonoBehaviour
       {
          Instantiate(textObject, leaderBorad.content);
       }
+
+      IEnumerator e = leaderBorad.content.transform.GetEnumerator();
+      // transform 이 순회가능한 타입으로 되어 있음. GetEnumerator(); 가 가능
+
+      WebsocketClient.GetInstance().playerPool
+         .OrderByDescending(i => i.Value.score)
+         .ToList().ForEach(f => {
+            e.MoveNext();
+            Transform t = (Transform)e.Current;
+            t.gameObject.GetComponent<Text>().text = f + ". " + f.Value.nickname + " : " + f.Value.score;
+         });
    }
 }

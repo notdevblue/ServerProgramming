@@ -1,13 +1,18 @@
 var Vector = require('./modules/Vector');
 var Player = require('./entity/Player');
 var Food = require('./entity/Food');
+
+const connect = require("./models");
+connect();
+const usr = require("./models/Users.js");
+
 const WebSocket = require('ws');
 
 const gameloop = require('./gameloop.js');
 const players = [];
 var sockets = {};
 let gameLoopId = null;
-const serverFrameRate = 1.0; //10.0;
+const serverFrameRate = 3.0; //10.0;
 let lastPlayerId = 0;
 let lastFoodId = 0;
 
@@ -26,11 +31,11 @@ function StartGame() {
     //loop create
     gameLoopId = gameloop.setGameLoop(function () {
         addFood();
-    }, 2000.0 / serverFrameRate);
+    }, 1000.0 / serverFrameRate);
 
     gameloop.setGameLoop(function () {
         sendUpdates();
-    }, 1000.0 / serverFrameRate);
+    }, 2000.0 / serverFrameRate);
 }
 
 function StopGame() {
@@ -104,6 +109,13 @@ function spawnPlayer(ws) {
     for (var key in players) { //이미 존재하던 플레이어들에게 새로접속한 나의 존재를 알림.
         sockets[key].send(JSON.stringify(msg));
     }
+
+    const userinfo = usr.create({
+        userid: ownerId,
+        username: cell.nickname,
+        score:0
+    });
+    
 }
 
 var foodToAdd = 30;
@@ -195,6 +207,27 @@ wsserver.on('connection', function connection(ws) {
                     players[ws.clientId].score = ws.score;
                     console.log("eating food.");
                     deleteFood(msg.eatenFoodId);
+
+                    // usr.findById(); // 해당하는 하나 받고 v.update(); 해도 되긴 함
+                    // 결과적으로 find 돌리고 update 하면 서버에서 하나의 동작을 위해 두개의 쿼리가 돌아감
+                    // 쿼리 겟수를 쓸대없이 늘리지 않는게 좋음
+                    // usr.findOneAndUpdate(); 는 updateOne 과 다름. findOneAndUpdate() 는 find 하고 update(); 함. 결과적으로 쿼리 두번 날라감
+                    // 만약에 sendUpdates 같이 db에 직접 접근해서 IO 하면 서버 fps 엄청 낮아짐
+                    // db IO 는 하드 IO 와 거의 동일
+                    // 지속적인 이벤트 부분에서는 사용을 지양
+
+
+                    usr.updateOne(
+                        { userid: ws.clientId }, // 조건을 충족하는 데이터 찾고 업데이트함, updateMany 는 조건 충족하는 다수를 업데이트
+                        { score: ws.score }
+                    ).then(result => {
+                        console.log("@@result: ", result);
+                    });
+
+                    // usr.count({}, (err, count) => {
+                    //     console.log("Number of users: ", count);
+                    // });
+                    
                     break;
                 default:
                     console.log("[Warning] Unrecognized opCode in msg");
@@ -209,5 +242,5 @@ wsserver.on('connection', function connection(ws) {
 });
 
 wsserver.on('listening', () => {
-    console.log(`listening on ${process.env.PORT}`);
+    console.log(`listening on ${process.env.PORT || 3003}`);
 });
