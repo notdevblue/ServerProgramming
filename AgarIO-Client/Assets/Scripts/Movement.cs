@@ -10,13 +10,16 @@ public class Movement : MonoBehaviour
    public int ownerId;
    public Text nickname;
 
+   Vector3 target;
+
    // Start is called before the first frame update
    void Start()
    {
       GetComponentInChildren<Canvas>().worldCamera = Camera.main;
       if (WebsocketClient.GetInstance().clientId == ownerId)
          Camera.main.GetComponent<CameraScripts>().player = this.transform;
-      InvokeRepeating(nameof(SendTargetToServer), 0, 0.5f);
+      InvokeRepeating(nameof(SendTargetToServer), 0.0f, 0.5f);
+      InvokeRepeating(nameof(CheckTarget), 0.0f, 1.0f);
    }
 
    // Update is called once per frame
@@ -24,7 +27,7 @@ public class Movement : MonoBehaviour
    {
       // if (WebsocketClient.GetInstance().clientId != ownerId) return;
       //Vector3 target = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-      Vector3 target = CheckTarget();
+      // Vector3 target = CheckTarget();
       target.z = transform.position.z;
 
       transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
@@ -37,11 +40,12 @@ public class Movement : MonoBehaviour
       Debug.Log("SendTargetToServer");
    }
 
-   Vector3 CheckTarget()
+   void CheckTarget()
    {
-      float x = WebsocketClient.GetInstance().playerPool[ownerId].targetX;
-      float y = WebsocketClient.GetInstance().playerPool[ownerId].targetY;
-
-      return new Vector3(x, y, 0);
+      float x = WebsocketClient.GetInstance().playerPool[ownerId].posX;
+      float y = WebsocketClient.GetInstance().playerPool[ownerId].posY;
+      
+      target = new Vector3(x, y, 0);
+      // return new Vector3(x, y, 0);
    }
 }

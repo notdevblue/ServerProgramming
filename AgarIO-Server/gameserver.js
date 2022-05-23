@@ -31,6 +31,11 @@ function StartGame() {
     //loop create
     gameLoopId = gameloop.setGameLoop(function () {
         addFood();
+        
+        players.forEach(function (p) {
+            movePlayer(p);
+        });
+
     }, 1000.0 / serverFrameRate);
 
     gameloop.setGameLoop(function () {
@@ -70,22 +75,19 @@ function getNewPlayerId() {
 }
 
 function movePlayer(player) {
-    var x = 0, y = 0;
+    // var x = 0, y = 0;
     var target = {
-        x: player.posX - player.targetX,
-        y: player.posY - player.targetY
+        x: player.targetX - player.posX,
+        y: player.targetY - player.posY
     };
 
     var deg = Math.atan2(target.y, target.x);
-    var speed = 3;
-    var deltaX = speed * Math.sin(deg);
-    var deltaY = speed * Math.cos(deg);
+    var speed = 2;
+    var deltaX = speed * Math.cos(deg);
+    var deltaY = speed * Math.sin(deg);
 
-    x += deltaX;
-    y += deltaY;
-
-    player.posX = x;
-    player.posY = y;
+    player.posX += deltaX;
+    player.posY += deltaY;
 }
 
 function spawnPlayer(ws) {
@@ -227,7 +229,7 @@ wsserver.on('connection', function connection(ws) {
                     // usr.count({}, (err, count) => {
                     //     console.log("Number of users: ", count);
                     // });
-                    
+
                     break;
                 default:
                     console.log("[Warning] Unrecognized opCode in msg");
