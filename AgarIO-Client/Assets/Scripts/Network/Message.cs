@@ -12,4 +12,5 @@ public class Message
    public List<Player> visibleCells;
    public int eatenFoodId;
    public string nickname;
+   public List<Virus> virus;
 }

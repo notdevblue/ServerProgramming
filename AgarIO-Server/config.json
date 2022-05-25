@@ -1,0 +1,6 @@
+{
+   "maxFood": 30,
+   "maxVirus": 10,
+   "gameWidth": 960,
+   "gameHeight": 540
+}

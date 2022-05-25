@@ -1,6 +1,9 @@
 var Vector = require('./modules/Vector');
 var Player = require('./entity/Player');
 var Food = require('./entity/Food');
+var Virus = require("./entity/Virus.js");
+
+var cfg = require("./config.json");
 
 const connect = require("./models");
 connect();
@@ -10,6 +13,10 @@ const WebSocket = require('ws');
 
 const gameloop = require('./gameloop.js');
 const players = [];
+
+const foods = [];
+const viruss = [];
+
 var sockets = {};
 let gameLoopId = null;
 const serverFrameRate = 3.0; //10.0;
@@ -21,16 +28,24 @@ const START_COUNTDOWN_OP_CODE = 101;
 const MOVE_PLAYER_OP_CODE = 102;
 const JOIN_PLAYER_OP_CODE = 103;
 const ADD_FOOD_OP_CODE = 105;
+const ADD_VIRUS_OP_CODE = 106;
 
 //client op code
 const SCENE_READY_OP_CODE = 200;
 const EAT_FOOD_OP_CODE = 202;
+const EAT_VIRUS_OP_CODE = 203;
 const PING_CHECK_OP_CODE = 205;
 
 function StartGame() {
     //loop create
     gameLoopId = gameloop.setGameLoop(function () {
-        addFood();
+        var foodToAdd = cfg.maxFood - foods.length;
+        if (foodToAdd > 0)
+            addFood(foodToAdd);
+        
+        var virusToAdd = cfg.maxVirus - viruss.length;
+        if (virusToAdd > 0)
+            addVirus(virusToAdd);
         
         players.forEach(function (p) {
             movePlayer(p);
@@ -70,8 +85,11 @@ function getRandomColor() {
     };
 }
 
-function getNewPlayerId() {
-    return lastPlayerId++;
+async function getNewPlayerId() {
+    const uuid = await usr.countDocuments({ name: 'users' }); // name: 컬랙션의 이름, 아무것도 안 넘김녀 도큐먼트 안 모든 것
+    console.log("Number of users: " + uuid);
+
+    return uuid;
 }
 
 function movePlayer(player) {
@@ -101,16 +119,20 @@ function spawnPlayer(ws) {
     msg.opCode = JOIN_PLAYER_OP_CODE;
     msg.socketId = ws.clientId;
     msg.player = cell;
-    players.push(cell);
+    players[ownerId] = cell; // players.push(cell);
 
-    for (var key in players) { //나(클라이언트)에게 이미 플레이하던 유저들의 정보를 보냄.
-        msg.player = players[key];
-        if (key != ownerId) ws.send(JSON.stringify(msg));
-    }
-
-    for (var key in players) { //이미 존재하던 플레이어들에게 새로접속한 나의 존재를 알림.
+    // 이미 존재하던 플레이어들에게 새로접속한 나의 존재를 알림.
+    for (var key in sockets) { 
         sockets[key].send(JSON.stringify(msg));
     }
+
+    // 나(클라이언트)에게 이미 플레이하던 유저들의 정보를 보냄.
+    players.forEach(function (p) { 
+        msg.player = p;
+
+        if (p.owner != ownerId)
+            ws.send(JSON.stringify(msg));
+    });
 
     const userinfo = usr.create({
         userid: ownerId,
@@ -120,13 +142,10 @@ function spawnPlayer(ws) {
     
 }
 
-var foodToAdd = 30;
-const foods = [];
+function addFood(toAdd) {
+    if (toAdd < 0) return;
 
-function addFood() {
-    if (foodToAdd < 0) return;
-
-    while (foodToAdd--) {
+    while (toAdd--) {
         var pos = getRandomPosition();
         var c = getRandomColor();
         var food = new Food(lastFoodId++, pos, c.r, c.g, c.b);
@@ -149,6 +168,16 @@ function deleteFood(fid) {
     foods.splice(fid, 1); // 사직되는 요소부터 한칸 제거함
 }
 
+function addVirus(toAdd) { 
+    if (toAdd < 0) return;
+
+    while (toAdd--) {
+        var pos = getRandomPosition();
+        var v = new Virus(0, pos);
+        viruss.push(v);
+    }
+}
+
 function pingCheck(ws) {
     msg.socketId = ws.clientId;
     msg.opCode = PING_CHECK_OP_CODE;
@@ -161,6 +190,7 @@ function sendUpdates() {
         msg.opCode = MOVE_PLAYER_OP_CODE;
         msg.player = p;
         msg.foods = foods; // 서버에서 살아남은 foods
+        msg.virus = viruss;
         msg.visibleCells = players;
         // console.log("sendUpdates: " + p.targetX);
         sockets[p.owner].send(JSON.stringify(msg));
@@ -174,6 +204,7 @@ var msg = {
     player: null,
     visibleCells: [], // 사아 범위 내 모든 종류의 플레이어
     eatenFoodId: -1,
+    virus:[],
 };
 
 const wsserver = new WebSocket.Server({ port: process.env.PORT || 3003 }, () => {
@@ -181,9 +212,9 @@ const wsserver = new WebSocket.Server({ port: process.env.PORT || 3003 }, () => 
     StartGame();
 });
 
-wsserver.on('connection', function connection(ws) {
+wsserver.on('connection', async function connection(ws) {
     //ws.send("Hello! I am a server");
-    ws.clientId = msg.socketId = getNewPlayerId();
+    ws.clientId = msg.socketId = await getNewPlayerId();
     msg.opCode = START_COUNTDOWN_OP_CODE;
     sockets[ws.clientId] = ws;
     ws.send(JSON.stringify(msg));

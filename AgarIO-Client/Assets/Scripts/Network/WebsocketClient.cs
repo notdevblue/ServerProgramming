@@ -27,10 +27,12 @@ public class WebsocketClient : MonoBehaviour
    const int MOVE_PLAYER_OP_CODE = 102;
    const int JOIN_PLAYER_OP_CODE = 103;
    const int ADD_FOOD_OP_CODE = 105;
+   const int ADD_VIRUS_OP_CODE = 106;
 
    //client op code
    const int SCENE_READY_OP_CODE = 200;
    const int EAT_FOOD_OP_CODE = 202;
+   const int EAT_VIRUS_OP_CODE = 203;
    const int PING_CHECK_OP_CODE = 205;
 
    public Action playerUpdateAction;
@@ -145,16 +147,23 @@ public class WebsocketClient : MonoBehaviour
    void GenerateFood(string data)
    {
       Message msg = JsonUtility.FromJson<Message>(data);
-      // msg.foods.ForEach(f =>
-      // {
-      //    GameObject o = Instantiate(foodObj, new Vector3(f.posX, f.posY, 0), Quaternion.identity);
+      msg.foods.ForEach(f =>
+      {
+         GameObject o = Instantiate(foodObj, new Vector3(f.posX, f.posY, 0), Quaternion.identity);
 
-      //    Renderer r = o.GetComponentInChildren<MeshRenderer>();
-      //    r.sharedMaterial = new Material(Shader.Find("Unlit/Color"));
-      //    r.sharedMaterial.SetColor("_Color", new Color(f.r / 255f, f.g / 255f, f.b / 255f));
-      //    foodList.Add(f);
-      //    Debug.Log("Generate Food");
-      // });
+         Renderer r = o.GetComponentInChildren<MeshRenderer>();
+         r.sharedMaterial = new Material(Shader.Find("Unlit/Color"));
+         r.sharedMaterial.SetColor("_Color", new Color(f.r / 255f, f.g / 255f, f.b / 255f));
+         foodList.Add(f);
+         Debug.Log("Generate Food");
+      });
+   }
+
+   public GameObject virusObj;
+   public List<Virus> virusList = null;
+   void Generatevirus()
+   {
+
    }
 
    void PlayerUpdate(string data)
@@ -163,9 +172,13 @@ public class WebsocketClient : MonoBehaviour
       playerPool[msg.socketId] = msg.player;
       msg.visibleCells.ForEach(cell =>
       {
-         playerPool[cell.owner].targetX = cell.targetX;
-         playerPool[cell.owner].targetY = cell.targetY;
-         playerPool[cell.owner] = cell;
+         if (!cell.nickname.IsNullOrEmpty()) // 무조건 닉네임이 존재하기 때문
+         {
+            playerPool[cell.owner].targetX = cell.targetX;
+            playerPool[cell.owner].targetY = cell.targetY;
+            playerPool[cell.owner] = cell;
+         }
+         
       });
 
       List<Food> removeFoodList = foodList.Where(i => !msg.foods.Any(e => i.id == e.id)).ToList(); // 사라진 푸드
