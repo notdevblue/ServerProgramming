@@ -196,6 +196,13 @@ public class WebsocketClient : MonoBehaviour
          Debug.Log("Generate Food");
       }); // 유니티 2018 부터 포이치 가비지 발생 안 되게 업뎃됨 for 와 foreaetch 성능상 큰 차이 없다고 커뮤에서 그럼
 
+      List<Virus> addVirusList = msg.virus.Where(i => !virusList.Any(e => i.id == e.id)).ToList();
+      addVirusList.ForEach(v => {
+         GameObject g = Instantiate(virusObj, new Vector3(v.posX, v.posY, 0.0f), Quaternion.identity);
+         g.name = v.id.ToString();
+         virusList.Add(v);
+      });
+
       GameObject.FindGameObjectsWithTag("Food")
          .ToList<GameObject>()
          .Where(g => removeFoodList.Any(e => g.name.Equals(e.id.ToString())))
@@ -219,6 +226,17 @@ public class WebsocketClient : MonoBehaviour
       msg.opCode = EAT_FOOD_OP_CODE;
       msg.eatenFoodId = eatenFoodId;
       playerPool[clientId].mass = mass;
+      ws.Send(JsonUtility.ToJson(msg));
+   }
+
+   public void SendEatVirus()
+   {
+      Message msg = new Message(int eatenVirusId, float mass);
+      msg.socketId = clientId;
+      msg.opCode = EAT_VIRUS_OP_CODE;
+      msg.eatenVirusId = eatenVirusId;
+      playerPool[clientId].mass = mass;
+
       ws.Send(JsonUtility.ToJson(msg));
    }
 

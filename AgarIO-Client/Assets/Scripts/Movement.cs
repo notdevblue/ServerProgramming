@@ -30,7 +30,7 @@ public class Movement : MonoBehaviour
       // Vector3 target = CheckTarget();
       target.z = transform.position.z;
 
-      transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
+      transform.position = Vector3.Lerp(transform.position, target, moveSpeed * Time.deltaTime);
    }
 
    void SendTargetToServer()

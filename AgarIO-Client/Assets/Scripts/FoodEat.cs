@@ -21,9 +21,14 @@ public class FoodEat : MonoBehaviour
 
       if (other.gameObject.CompareTag("Virus"))
       {
-         transform.localScale -= new Vector3(SizeIncrease * 2, SizeIncrease * 2, SizeIncrease * 2);
+         Vector3 mass = transform.localScale;
+         if (mass.x < 2.0f) return;
+
+         transform.localScale = new Vector3(mass.x / 2, mass.y / 2, mass.z / 2);
+         GameObject g= Instantiate(gameObject, transform.parent);
+         g.transform.position = new Vector3(transform.position.x + mass / 2, (transform.position.y + mass.x/2, 0f));
+         WebsocketClient.GetInstance().SendEatVirus(Int32.Parse(other.gameObject.name), transform.localScale.x);
          other.gameObject.SetActive(false);
-         Score -= 10;
       }
    }
 }

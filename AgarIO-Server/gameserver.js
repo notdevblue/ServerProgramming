@@ -22,6 +22,7 @@ let gameLoopId = null;
 const serverFrameRate = 3.0; //10.0;
 let lastPlayerId = 0;
 let lastFoodId = 0;
+let lastVirusId = 0;
 
 //server op code
 const START_COUNTDOWN_OP_CODE = 101;
@@ -29,12 +30,13 @@ const MOVE_PLAYER_OP_CODE = 102;
 const JOIN_PLAYER_OP_CODE = 103;
 const ADD_FOOD_OP_CODE = 105;
 const ADD_VIRUS_OP_CODE = 106;
+const GAMEOVER_OP_CODE = 110;
 
 //client op code
 const SCENE_READY_OP_CODE = 200;
 const EAT_FOOD_OP_CODE = 202;
-const EAT_VIRUS_OP_CODE = 203;
 const PING_CHECK_OP_CODE = 205;
+const EAT_VIRUS_OP_CODE = 206;
 
 function StartGame() {
     //loop create
@@ -173,9 +175,15 @@ function addVirus(toAdd) {
 
     while (toAdd--) {
         var pos = getRandomPosition();
-        var v = new Virus(0, pos);
+        var v = new Virus(lastVirusId++, pos);
         viruss.push(v);
     }
+}
+
+function deleteVirus(vid) {
+    viruss[vid] = {};
+    console.log("Deleted virus: " + vid);
+    viruss.splice(vid, 1);
 }
 
 function pingCheck(ws) {
@@ -204,6 +212,7 @@ var msg = {
     player: null,
     visibleCells: [], // 사아 범위 내 모든 종류의 플레이어
     eatenFoodId: -1,
+    eatenVirusId: -1,
     virus:[],
 };
 
@@ -262,6 +271,22 @@ wsserver.on('connection', async function connection(ws) {
                     // });
 
                     break;
+                
+                case EAT_VIRUS_OP_CODE:
+                    ws.score += 20;
+                    players[ws.clientId].score = ws.score;
+                    deleteVirus(msg.eatenVirusId);
+                    console.log("eating virus");
+                    
+                    usr.updateOne(
+                        { userid: ws.clientId }, // 조건을 충족하는 데이터 찾고 업데이트함, updateMany 는 조건 충족하는 다수를 업데이트
+                        { score: ws.score }
+                    ).then(result => {
+                        console.log("@@result: ", result);
+                    });
+
+                    break;
+            
                 default:
                     console.log("[Warning] Unrecognized opCode in msg");
             }
