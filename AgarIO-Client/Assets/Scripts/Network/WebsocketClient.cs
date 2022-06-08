@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using WebSocketSharp;
 
@@ -28,17 +29,21 @@ public class WebsocketClient : MonoBehaviour
    const int JOIN_PLAYER_OP_CODE = 103;
    const int ADD_FOOD_OP_CODE = 105;
    const int ADD_VIRUS_OP_CODE = 106;
+   const int GAMEOVER_OP_CODE = 110;
 
    //client op code
    const int SCENE_READY_OP_CODE = 200;
    const int EAT_FOOD_OP_CODE = 202;
    const int EAT_VIRUS_OP_CODE = 203;
    const int PING_CHECK_OP_CODE = 205;
+   const int DEATH_OP_CODE = 204;
 
    public Action playerUpdateAction;
 
    public InputField inputNickname;
    public Text scoreText;
+
+   public RectTransform gameOverPanel;
 
    void Awake()
    {
@@ -68,6 +73,9 @@ public class WebsocketClient : MonoBehaviour
                   break;
                case MOVE_PLAYER_OP_CODE:
                   _actions.Enqueue(() => PlayerUpdate(e.Data));
+                  break;
+               case GAMEOVER_OP_CODE:
+                  _actions.Enqueue(() => gameOverPanel.gameObject.SetActive(!gameOverPanel.gameObject.activeInHierarchy));
                   break;
             }
 
@@ -229,15 +237,36 @@ public class WebsocketClient : MonoBehaviour
       ws.Send(JsonUtility.ToJson(msg));
    }
 
-   public void SendEatVirus()
+   public void SendEatVirus(int eatenVirusId, float mass)
    {
-      Message msg = new Message(int eatenVirusId, float mass);
+      Message msg = new Message();
       msg.socketId = clientId;
       msg.opCode = EAT_VIRUS_OP_CODE;
       msg.eatenVirusId = eatenVirusId;
       playerPool[clientId].mass = mass;
 
       ws.Send(JsonUtility.ToJson(msg));
+   }
+
+   public void SendCollision(int p1, int p2)
+   {
+      Message msg = new Message();
+      msg.socketId = clientId;
+      msg.opCode = DEATH_OP_CODE;
+      msg.collisions = new List<Player>
+      {
+         playerPool[p1],
+         playerPool[p2]
+      };
+
+      Debug.Log("Send Collision: " + p1 + " / " + p2);
+      ws.Send(JsonUtility.ToJson(msg));
+   }
+
+   public void GameOver()
+   {
+      gameOverPanel.gameObject.SetActive(!gameOverPanel.gameObject.activeInHierarchy);
+      SceneManager.LoadScene(gameObject.scene.name);
    }
 
    public void SendUpdate(Vector3 target)

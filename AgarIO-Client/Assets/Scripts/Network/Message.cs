@@ -14,4 +14,5 @@ public class Message
    public int eatenVirusId;
    public string nickname;
    public List<Virus> virus;
+   public List<Player> collisions;
 }

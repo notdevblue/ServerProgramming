@@ -37,6 +37,7 @@ const SCENE_READY_OP_CODE = 200;
 const EAT_FOOD_OP_CODE = 202;
 const PING_CHECK_OP_CODE = 205;
 const EAT_VIRUS_OP_CODE = 206;
+const DEATH_OP_CODE = 204;
 
 function StartGame() {
     //loop create
@@ -186,6 +187,18 @@ function deleteVirus(vid) {
     viruss.splice(vid, 1);
 }
 
+function deathCheck(collisions) { // player 타입 list
+    var sid = (collisions[0].mass.toFixed(2) < collisions[1].mass.toFixed(2)) ? collisions[0].owner : collisions[1].owner; // 제거되어야할 세포 id
+
+    if (sockets[sid] == null) return;
+    msg.socketId = sid;
+    msg.opCode = GAMEOVER_OP_CODE;
+    sockets[sid].send(JSONS.stringify(msg));
+    console.log("Delete player: " + sockets[sid].clientId);
+    delete sockets[sid];
+
+}
+
 function pingCheck(ws) {
     msg.socketId = ws.clientId;
     msg.opCode = PING_CHECK_OP_CODE;
@@ -200,6 +213,9 @@ function sendUpdates() {
         msg.foods = foods; // 서버에서 살아남은 foods
         msg.virus = viruss;
         msg.visibleCells = players;
+
+        if (sockets[p.owner] == null) return;
+
         // console.log("sendUpdates: " + p.targetX);
         sockets[p.owner].send(JSON.stringify(msg));
     });
@@ -213,7 +229,8 @@ var msg = {
     visibleCells: [], // 사아 범위 내 모든 종류의 플레이어
     eatenFoodId: -1,
     eatenVirusId: -1,
-    virus:[],
+    virus: [],
+    collisions: [],
 };
 
 const wsserver = new WebSocket.Server({ port: process.env.PORT || 3003 }, () => {
@@ -285,6 +302,11 @@ wsserver.on('connection', async function connection(ws) {
                         console.log("@@result: ", result);
                     });
 
+                    break;
+                
+                case DEATH_OP_CODE:
+                    deathCheck(msg.collisions);
+                    console.log("player death: " + msg.collisions);
                     break;
             
                 default:
