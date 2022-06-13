@@ -21,3 +21,7 @@ AgarIO-Client/Logs
 AgarIO-Client/Temp
 AgarIO-Client/Debug
 AgarIO-Server/.env
+LiarGame/LiarClient/__MACOSX
+LiarGame/LiarClient/Library
+LiarGame/LiarClient/Temp
+LiarGame/LiarClient/Logs
