@@ -53,7 +53,9 @@ public class WebsocketClient : MonoBehaviour
    // Start is called before the first frame update
    void Start()
    {
-      ws = new WebSocket("ws://127.0.0.1:3003");
+      // ws = new WebSocket("ws://127.0.0.1:3003");
+      // ws = new WebSocket("ws://hangario.herokuapp.com/");
+      ws = new WebSocket("ws://nodejs-webgame-test.herokuapp.com/");
       ws.Connect();
       ws.OnMessage += (sender, e) =>
       {
@@ -139,11 +141,21 @@ public class WebsocketClient : MonoBehaviour
       if (clientId < 0) return;
       Message msg = JsonUtility.FromJson<Message>(data);
       Player p = msg.player;
+
+      try
+      {
+         playerPool.Add(p.owner, p);
+      }
+      catch (System.Exception)
+      {
+         Debug.Log("Failed to regenerate player");
+         return;
+      }
+
       GameObject o = Instantiate(playerObj, new Vector3(p.posX, p.posY, 0), Quaternion.identity);
       o.GetComponent<Movement>().ownerId = p.owner;
       o.GetComponent<Movement>().nickname.text = p.nickname;
 
-      playerPool.Add(p.owner, p);
       Renderer r = o.GetComponentInChildren<MeshRenderer>();
       r.sharedMaterial = new Material(Shader.Find("Unlit/Color"));
       r.sharedMaterial.SetColor("_Color", new Color(p.r / 255f, p.g / 255f, p.b / 255f));
@@ -294,5 +306,11 @@ public class WebsocketClient : MonoBehaviour
       Debug.Log("time:" + _time.ToString());
 
       ws.Send(JsonUtility.ToJson(msg));
+   }
+
+   private void OnApplicationQuit()
+   {
+      ws.CloseAsync();
+      Debug.Log("Connection Closed");
    }
 }

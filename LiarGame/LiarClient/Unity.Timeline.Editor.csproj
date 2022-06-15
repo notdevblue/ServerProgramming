@@ -300,9 +300,9 @@
      <Compile Include="Library/PackageCache/com.unity.timeline@1.6.4/Editor/inspectors/AnimationTrackInspector.cs" />
      <Compile Include="Library/PackageCache/com.unity.timeline@1.6.4/Editor/State/WindowState.cs" />
      <Compile Include="Library/PackageCache/com.unity.timeline@1.6.4/Editor/Manipulators/Move/MoveItemModeRipple.cs" />
-     <Compile Include="Library/PackageCache/com.unity.timeline@1.6.4/Editor/inspectors/DirectorNamedColorInspector.cs" />
      <Compile Include="Library/PackageCache/com.unity.timeline@1.6.4/Editor/Utilities/Scopes/GUIColorOverride.cs" />
      <Compile Include="Library/PackageCache/com.unity.timeline@1.6.4/Editor/treeview/ItemGui/TimelineClipGUI.cs" />
+     <Compile Include="Library/PackageCache/com.unity.timeline@1.6.4/Editor/inspectors/DirectorNamedColorInspector.cs" />
      <None Include="Library/PackageCache/com.unity.timeline@1.6.4/Editor/Unity.Timeline.Editor.asmdef" />
      <None Include="Library/PackageCache/com.unity.timeline@1.6.4/Editor/StyleSheets/res/Timeline_LightSkin.txt" />
      <None Include="Library/PackageCache/com.unity.timeline@1.6.4/Editor/StyleSheets/Extensions/dark.uss" />

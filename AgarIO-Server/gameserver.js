@@ -36,7 +36,7 @@ const GAMEOVER_OP_CODE = 110;
 const SCENE_READY_OP_CODE = 200;
 const EAT_FOOD_OP_CODE = 202;
 const PING_CHECK_OP_CODE = 205;
-const EAT_VIRUS_OP_CODE = 206;
+const EAT_VIRUS_OP_CODE = 203;
 const DEATH_OP_CODE = 204;
 
 function StartGame() {
@@ -197,6 +197,13 @@ function deathCheck(collisions) { // player 타입 list
     console.log("Delete player: " + sockets[sid].clientId);
     delete sockets[sid];
 
+    players.forEach(function (v) {
+        if (v.owner == sid) {
+            players[v] = {};
+            players.splice(v, 1);
+        }
+    });
+
 }
 
 function pingCheck(ws) {
@@ -238,13 +245,15 @@ const wsserver = new WebSocket.Server({ port: process.env.PORT || 3003 }, () => 
     StartGame();
 });
 
-wsserver.on('connection', async function connection(ws) {
+wsserver.on('connection', async function connection(ws, req) {
     //ws.send("Hello! I am a server");
     ws.clientId = msg.socketId = await getNewPlayerId();
     msg.opCode = START_COUNTDOWN_OP_CODE;
     sockets[ws.clientId] = ws;
     ws.send(JSON.stringify(msg));
     console.log("hello new client : " + ws.clientId);
+
+    const ipAddr = req.headers["x-forwarded-for"] || req.headers.host;
 
     ws.on('message', (data) => {
         if (data.sender != 0) {
@@ -317,7 +326,16 @@ wsserver.on('connection', async function connection(ws) {
 
     ws.on('close', () => {
         console.log("connection close");
-        StopGame();
+        delete sockets[ws.clientId];
+        players.forEach(function (v) {
+            if (v.ownerId == ws.clientId) {
+                players[v] = {}
+                players.splice(v, 1);
+                console.log("delete player: " + ws.clientId);
+            }
+        });
+        console.log(`# A client disconnected from server [${ipAddr}]`);
+        // StopGame();
     });
 });
 

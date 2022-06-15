@@ -16,7 +16,10 @@ public class JoinedHandler : MonoBehaviour
          joinedUserId = user.id;
          joinedUserNickname = user.nickname;
 
-         _flag.Set();
+         if (user.id != WebSocketClient.Instance.id) {
+            _flag.Set();
+         }
+
       });
 
       StartCoroutine(Joined());

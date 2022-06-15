@@ -27,7 +27,7 @@ public class FoodEat : MonoBehaviour
          transform.localScale = new Vector3(mass.x / 2, mass.y / 2, mass.z / 2);
          GameObject g= Instantiate(gameObject, transform.parent);
          g.transform.position = new Vector3(transform.position.x + mass.x / 2, transform.position.y + mass.x / 2, 0f);
-         WebsocketClient.GetInstance().SendEatVirus(Int32.Parse(other.gameObject.name), transform.localScale.x);
+         WebsocketClient.GetInstance().SendEatVirus(int.Parse(other.gameObject.name), transform.localScale.x);
          other.gameObject.SetActive(false);
       }
    }

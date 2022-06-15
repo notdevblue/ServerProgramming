@@ -18,6 +18,8 @@ public class WebSocketClient : MonoBehaviour
 
    public int id;
 
+   public bool canSend = true;
+
    private void Awake()
    {
       Instance = this;
@@ -45,7 +47,8 @@ public class WebSocketClient : MonoBehaviour
 
    public void Send(string type, string payload)
    {
-      ws.Send(JsonUtility.ToJson(new DataVO(type, payload)));
+      if (canSend)
+         ws.Send(JsonUtility.ToJson(new DataVO(type, payload)));
    }
 
 

@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/MafiaGame.unity
+    guid: d6c22283f80cc4a6abc84defe42e287b
   m_configObjects: {}

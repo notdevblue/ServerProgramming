@@ -13,6 +13,9 @@ public class Room : MonoBehaviour
    [SerializeField]
    private List<UserData> usersOnRoom = new List<UserData>();
 
+   public int userCount => usersOnRoom.Count;
+   public List<UserData> GetAllUser => usersOnRoom;
+
    private void Awake()
    {
       Instance = this;
@@ -25,12 +28,32 @@ public class Room : MonoBehaviour
       Instantiate(player, imageRoot);
    }
 
+
    public UserData FindUser(int id)
    {
       return usersOnRoom.Find(x => x.id == id);
    }
 
-   public void DeleteAll()
+   public void ReDraw()
+   {
+      DeleteAllImage();
+      usersOnRoom.ForEach(e => {
+         Instantiate(player, imageRoot);
+      });
+   }
+
+   public void DeleteUser(int id)
+   {
+      var target = usersOnRoom.Find(e => e.id == id);
+      if (target != null)
+      {
+         usersOnRoom.Remove(target);
+      }
+
+      ReDraw();
+   }
+
+   public void DeleteAllImage()
    {
       for (int i = imageRoot.childCount - 1; i >= 0; --i)
       {
