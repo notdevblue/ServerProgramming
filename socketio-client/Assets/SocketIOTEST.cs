@@ -18,7 +18,13 @@ public class SocketIOTEST : MonoBehaviour
 
    void Start()
    {
-      Uri uri = new Uri("http://127.0.0.1:3000"); // http 로 접근해도 socketio 내부에서 변환이 됨
+      // Transport 옵션으로 WebSocket 넣었기 때문에
+      // 프로토콜 업그레이드 자동 진행
+
+      // Transport 옵션 없으면
+      // 내부적으로 HTTP 폴링 방식으로 접속
+      // 웹소켓 지원한다는걸 알게 되면 업그레이드 한 뒤 통신 유지
+      Uri uri = new Uri("http://127.0.0.1:3000/my-namespace"); // http 로 접근해도 socketio 내부에서 변환이 됨
       socket = new SocketIOUnity(uri, new SocketIOOptions { 
          Query = new Dictionary<string, string> {
             {"token", "UNITY"}
@@ -45,9 +51,19 @@ public class SocketIOTEST : MonoBehaviour
          Debug.Log("Pong: " + e.TotalMilliseconds);
       };
 
-
-
       socket.Connect();
+
+      socket.OnUnityThread("spin", data => { // 특정 이벤트 대해서
+         cubeObject.transform.Rotate(0, 45, 0);
+         // rotateAngle = 0;
+
+         // 클라이언트에서 자연스러운 처리가 필요한게 아니면
+         // 여기서 바로바로 가능
+      });
+
+      socket.OnAnyInUnityThread((name, response) => { // 모든 이벤트 대해서
+         receivedText.text += "Received on " + name + ": " + response.GetValue().GetRawText() + "\r\n";
+      });
    }
 
    public void EmitTest()
@@ -58,6 +74,37 @@ public class SocketIOTEST : MonoBehaviour
       socket.Emit(eventName, txt);
    }
 
+   public void EmitSpin()
+   {
+      socket.Emit("spin");
+   }
+
+   public void EmitClass()
+   {
+      TestStringClass testClass = new TestStringClass("GameServer프로그ram잉");
+      socket.Emit("class", testClass);
+   }
+
+   float rotateAngle = 45;
+   float MaxRotateAngle = 45;
+   // private void Update()
+   // {
+   //    if (rotateAngle < MaxRotateAngle)
+   //    {
+   //       ++rotateAngle;
+   //       cubeObject.transform.Rotate(0, 1, 0);
+   //    }
+   // }
+
+   [Serializable]
+   class TestStringClass
+   {
+      public string txt;
+      public TestStringClass(string txt)
+      {
+         this.txt = txt;
+      }
+   }
 
    private void OnApplicationQuit()
    {
